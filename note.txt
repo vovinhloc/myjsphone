@@ -1,0 +1,36 @@
+1967  sudo git commit -m "first commit"
+ 1968  sudo git config --global user.email "vovinhl@yahoo.com"
+ 1969  sudo git config --global user.name "vovinhloc"
+ 1970  sudo git commit -m "first commit"
+ 1971  sudo git branch -M main
+ 1972  sudo git branch
+ 1973  sudo git branch "Main"
+ 1974  sudo git commit -m "Initial commit"
+ 1975  sudo git checkout -b Main
+ 1976  sudo git remote add origin https://github.com/vovinhloc/myjsphone.git
+ 1977  sudo git push -u origin main
+ 1978  sudo git branch
+ 1979  sudo git add .
+ 1980  sudo git commit -m "Initial commit"
+ 1981  sudo git branch Main
+ 1982  sudo git branch -M main
+ 1983  sudo git remote add origin https://github.com/vovinhloc/myjsphone.git
+ 1984  sudo git push -u origin main
+ 1985  sudo git remote set-url origin https://github_pat_11AL@github.com/vovinhloc/myjsphone.git
+ 1986  sudo git push -u origin main
+ 1987  sudo git remote add origin https://github.com/vovinhloc/myjsphone.git
+ 1988  sudo git push -u origin main
+ 1989  sudo git login
+ 1990  git --help
+ 1991  sudo git brand -M incall
+ 1992  sudo git brand -b incall
+ 1993  sudo git branch -b incall
+ 1994  sudo git checkout -b incall
+ 1995  git branch
+ 1996  sudo git add .
+ 1997  sudo git commit -m "incommingcall"
+ 1998  sudo git push
+ 1999  sudo git push --set_upstream origin incall
+ 2000  sudo git push --set-upstream origin incall
+ 2001  sudo ls
+ 2002  history

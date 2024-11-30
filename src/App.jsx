@@ -8,9 +8,11 @@ import useAxios from "./CustomHooks/useAxios";
 import Login from "./page/login";
 import Home from "./page/home";
 import WindowCallOut from "./component/WindowCallOut";
+import WindowCallIn from "./component/WindowCallIn";
 
 function App() {
   const [isCallingOut, setIsCallingOut] = useState(false);
+  const [isCallingIn, setIsCallingIn] = useState(false);
   let audioPlayers = useSelector((state) => state.jsSIPReducer.audioPlayers);
   let isLogined = useSelector((state) => state.loginReducer.isLogined);
   const endpointid = useSelector((state) => state.loginReducer.endpointid);
@@ -19,6 +21,7 @@ function App() {
 
   const userRef = useRef(user);
   const sessionRef = useRef(null);
+  const sessionCallInRef = useRef(null);
   const dispatch = useDispatch();
   const { axiosi } = useAxios();
   const coolPhone = useRef(
@@ -162,6 +165,9 @@ function App() {
 
       if (originator === "remote") {
         // call in
+        setIsCallingIn(true);
+        audioPlayers.Ring.play();
+        sessionCallInRef.current = session;
       } else {
         //call out
         let telsdt = request.ruri._user;
@@ -397,12 +403,17 @@ function App() {
       console.log("no sessionRef");
     }
   }
+  function resetIncallSession() {
+    sessionCallInRef.current = null;
+    setIsCallingIn(false);
+  }
   return (
     <>
       <h1>JsSIP by Locvv</h1>
 
       {isLogined ? <Home /> : <Login />}
       <hr></hr>
+      <button onClick={() => console.log(sessionCallInRef.current)}>sessionCallInRef</button>
       <button onClick={() => console.log(userRef.current)}>UseRef</button>
       <button onClick={() => console.log(user)}>User</button>
       <button onClick={() => console.log(isLogined)}>isLogined</button>
@@ -410,9 +421,14 @@ function App() {
       <button onClick={() => console.log({ isCallingOut })}>
         isCallingOut
       </button>
+      {/* {isCallingIn && <WindowCallIn session={sessionCallInRef.current} resetIncallSession={resetIncallSession}></WindowCallIn>}  */}
       {sessionRef.current && (
         <WindowCallOut session={sessionRef.current}></WindowCallOut>
       )}
+      {!sessionCallInRef.current && (
+        <WindowCallIn session={sessionCallInRef.current} resetIncallSession={resetIncallSession}></WindowCallIn>
+      )}
+
       <hr />
       <button onClick={() => hangup()}>App_Hangup</button>
     </>
