@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      const audio = new Audio("Ringtone_1.mp3");
+      audio.loop = true;
+      audio.currentTime = 0;
+      //   const linkaudio =
+      //     "http://115.165.166.66:8088/api/values/recordfile?filepath=\record\hoangduc\in\2021\07\05\1625446974.40.wav";
+      //   const audio = new Audio(linkaudio);
+      //   audio.play();
+      //https://dobrian.github.io/cmp/topics/sample-recording-and-playback-with-web-audio-api/1.loading-and-playing-sound-files.html
+      //   https://developer.mozilla.org/en-US/docs/Web/Guide/Audio_and_video_delivery/Cross-browser_audio_basics
+      //https://www.codegrepper.com/code-examples/javascript/javascript+play+audio+file
+      //https://www.w3schools.com/tags/tag_audio.asp
+      //stackoverflow.com/questions/49590533/can-i-preload-audio-files-in-javascript-html-and-play-it-also-after-network-loss
+      //   https://dobrian.github.io/cmp/topics/sample-recording-and-playback-with-web-audio-api/1.loading-and-playing-sound-files.html
+      //   https://stackoverflow.com/questions/49590533/can-i-preload-audio-files-in-javascript-html-and-play-it-also-after-network-loss
+      https: function playring() {
+        audio.currentTime = 0;
+        console.log("Playaudio.currentTime=", audio.currentTime);
+
+        audio.play();
+      }
+      function playringStop() {
+        console.log("1Pause audio.currentTime=", audio.currentTime);
+        audio.pause();
+        console.log("2Pause audio.currentTime=", audio.currentTime);
+        // audio.stop();
+      }
+    </script>
+    <button onclick="playring()">Play Ring</button>
+    <button onclick="playringStop()">Stop Ring</button>
+    <audio
+      controls="true"
+      src="http://115.165.166.66:8088/api/values/recordfile?filepath=\record\hoangduc\in\2021\07\05\1625446974.40.wav"
+    ></audio>
+  </body>
+</html>
