@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
+import "../../login.css";
 import loginSlice from "../../../src/redux/loginSlice";
 import useLogin from "../../../src/CustomHooks/useLogin";
-
 
 function Login() {
   const [userName, setUserName] = useState(process.env.USERNAME);
   // const [passWord, setPassWord] = useState("");
   const { saveLoginStatus, removeLoginStatus } = useLogin();
   const dispatch = useDispatch();
-  const loginHandle =async (event) => {
+  const loginHandle = async (event) => {
     event.preventDefault();
     const userName = event.target.userName.value;
     const passWord = event.target.passWord.value;
@@ -20,7 +20,7 @@ function Login() {
     1;
     // console.log(event.target);
     // return;
-    
+
     // console.log("[Login]:done onFinish");
     const userlogin = { username: userName, password: passWord };
     const kq = await axios.post(
@@ -45,38 +45,44 @@ function Login() {
   };
   return (
     <>
-      <div>Login</div>
-      <form className="LoginForm" onSubmit={loginHandle}>
-        <div className="LoginForm-Item">
-          <label htmlFor="userName" className="LoginForm-Item-Label">
-            UserName
-          </label>
-          <input
-            type="text"
-            id="userName"
-            name="userName"
-            className="LoginForm-Item-Input"
-            defaultValue={userName}
-          />
-        </div>
-        <div className="LoginForm-Item">
-          <label htmlFor="passWord" className="LoginForm-Item-Label">
-            Password
-          </label>
-          <input
-            type="password"
-            id="passWord"
-            name="passWord"
-            className="LoginForm-Item-Input"
-            defaultValue={""}
-          />
-        </div>
-        <div className="LoginForm-Item">
-          <button className="LoginForm-Item-Button" type="submit">
-            Login
-          </button>
-        </div>
-      </form>
+      <div className="containerColumn">
+        <h1 className="textCenter">Login</h1>
+        <form
+          className="containerColumn LoginForm fontLarge"
+          onSubmit={loginHandle}
+        >
+          <div className="LoginForm-Item">
+            <label htmlFor="userName" className="LoginForm-Item-Label">
+              UserName :
+            </label>
+            <input
+              type="text"
+              id="userName"
+              name="userName"
+              className="LoginForm-Item-Input"
+              defaultValue={userName}
+            />
+          </div>
+          <div className="LoginForm-Item">
+            <label htmlFor="passWord" className="LoginForm-Item-Label">
+              Password :
+            </label>
+            <input
+              type="password"
+              id="passWord"
+              name="passWord"
+              className="LoginForm-Item-Input"
+              defaultValue={""}
+            />
+          </div>
+          <div className="LoginForm-Item">
+            <label className="LoginForm-Item-Label"></label>
+            <button className="LoginForm-Item-Button" type="submit">
+              Login
+            </button>
+          </div>
+        </form>
+      </div>
     </>
   );
 }

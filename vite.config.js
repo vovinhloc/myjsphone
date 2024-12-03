@@ -6,6 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   return {
     plugins: [react()],
+    // base: '/phone/',
     server: {
       port: 3000,
       host: "gcall.com.vn",

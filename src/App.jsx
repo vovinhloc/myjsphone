@@ -12,7 +12,10 @@ import WindowCallIn from "./component/WindowCallIn";
 
 function App() {
   const [isCallingOut, setIsCallingOut] = useState(false);
+  const [callOutStatus, setCallOutStatus] = useState("");
   const [isCallingIn, setIsCallingIn] = useState(false);
+  const [isOnCall, setIsOnCall] = useState(false);
+  const [result, setResult] = useState(null);
   let audioPlayers = useSelector((state) => state.jsSIPReducer.audioPlayers);
   let isLogined = useSelector((state) => state.loginReducer.isLogined);
   const endpointid = useSelector((state) => state.loginReducer.endpointid);
@@ -27,6 +30,16 @@ function App() {
   const coolPhone = useRef(
     useSelector((state) => state.jsSIPReducer.coolPhone)
   );
+
+  const audioRef = useRef(null);
+
+  const playAudio = () => {
+    audioRef.current.play();
+  };
+
+  const pauseAudio = () => {
+    audioRef.current.pause();
+  };
 
   ///////////////
   async function getUser() {
@@ -116,7 +129,7 @@ function App() {
 
     coolPhone.current.start();
     dispatch(registerMakeCall(jssipCall));
-    
+
     coolPhone.current.on("registered", (eventData) => {
       console.info("coolPhone Registered, eventData=", eventData);
       dispatch(setRegisterStatus({ isRegister: true }));
@@ -133,12 +146,13 @@ function App() {
       });
     });
     coolPhone.current.on("newRTCSession", (eventData) => {
-      console.info("coolPhone newRTCSession, eventData=", eventData);
+      setIsOnCall(true);
+      // console.info("coolPhone newRTCSession, eventData=", eventData);
 
       let originator = eventData.originator;
       let session = eventData.session;
       let request = eventData.request;
-      console.log("[newRTCSession] : request=", request);
+      // console.log("[newRTCSession] : request=", request);
 
       //edit sdp
       session.on("sdp", function (sepEvent_data) {
@@ -152,26 +166,34 @@ function App() {
           session.myIsHold = false;
           sdp += "a=inactive";
           sdp += "\r\n";
-          console.log("[sdp]: ", sdp);
+          // console.log("[sdp]: ", sdp);
           sepEvent_data.sdp = sdp;
         } else {
           session.myUnHold = false;
           sdp += "a=sendrecv";
           sdp += "\r\n";
-          console.log("[sdp]: ", sdp);
+          // console.log("[sdp]: ", sdp);
           sepEvent_data.sdp = sdp;
         }
       });
-
+      session.on("failed",function(sepEvent_data){
+        setIsOnCall(false);
+      })
+      session.on("ended",function(sepEvent_data){
+        setIsOnCall(false);
+      })
       if (originator === "remote") {
         // call in
         setIsCallingIn(true);
-        audioPlayers.Ring.play();
+        ringAudio_play();
+        // audioPlayers.Ring.play();
+
         sessionCallInRef.current = session;
+        sessionCallInRef.current.myCallFrom=eventData.request.from.uri.user;
       } else {
         //call out
         let telsdt = request.ruri._user;
-        session.connection.addEventListener("addstream", function (e1) {
+        session.connection.addEventListener("addstream1", function (e1) {
           // Or addtrack
           console.log("[peerSession-addstream]:session e1", e1);
           let stream = e1.stream;
@@ -181,6 +203,20 @@ function App() {
           remoteAudio.srcObject = stream;
           remoteAudio.play();
           session.callstatus = "addstream";
+        });
+        session.connection.addEventListener("track", function (e1) {
+          console.log("[peerSession-ontrack]: session e1", e1);
+          let stream = e1.streams[0];
+
+          // Lấy thẻ audio có sẵn
+          let remoteAudio = document.getElementById("remoteAudio");
+          if (remoteAudio) {
+            remoteAudio.srcObject = stream;
+          } else {
+            console.error("Audio element not found!");
+          }
+
+          session.callstatus = "ontrack";
         });
         session.on("progress", (data) => {
           console.log("[call out - progress].on = progress]:data=", data);
@@ -193,9 +229,9 @@ function App() {
   });
   async function saveDebugLog(data = {}) {
     try {
-      console.log("saveDebugLog, enableDebug =", enableDebugRef.current);
-      console.log("saveDebugLog, userRef =", userRef.current);
-      console.log(userRef.current?.agents);
+      // console.log("saveDebugLog, enableDebug =", enableDebugRef.current);
+      // console.log("saveDebugLog, userRef =", userRef.current);
+      // console.log(userRef.current?.agents);
       if (!userRef.current?.agents) {
         return;
       }
@@ -238,6 +274,8 @@ function App() {
 
       var eventHandlers = {
         peerconnection: function (callEventData) {
+          setCallOutStatus("peerconnection");
+          // sessionRef.current.myCallStatus="peerconnection";
           console.log("makeCall peerconnection", callEventData);
           saveDebugLog({
             call_status: "makeCall peerconnection",
@@ -245,6 +283,9 @@ function App() {
           });
         },
         connecting: function (callEventData) {
+          sessionRef.current.myHangupName="Cancel";
+          setCallOutStatus("connecting");
+          sessionRef.current.myCallStatus="connecting";
           console.log("makeCall connecting", callEventData);
           saveDebugLog({
             call_status: "makeCall connecting",
@@ -253,6 +294,8 @@ function App() {
           setIsCallingOut(true);
         },
         sending: function (callEventData) {
+          setCallOutStatus("sending");
+          sessionRef.current.myCallStatus="sending";
           console.log("makeCall sending", callEventData);
           saveDebugLog({
             call_status: "makeCall sending",
@@ -260,6 +303,7 @@ function App() {
           });
         },
         icecandidate: function (callEventData) {
+          setCallOutStatus("icecandidate");
           console.log(callEventData?.candidate?.candidate);
           saveDebugLog({
             call_status: "makeCall icecandidate",
@@ -267,6 +311,8 @@ function App() {
           });
         },
         getusermediafailed: function (callEventData) {
+          setCallOutStatus("getusermediafailed");
+          sessionRef.current.myCallStatus="getusermediafailed";
           console.log("makeCall getusermediafailed :" + callEventData);
           saveDebugLog({
             call_status: "makeCall getusermediafailed",
@@ -274,6 +320,8 @@ function App() {
           });
         },
         progress: function (e) {
+          setCallOutStatus("progress");
+          sessionRef.current.myCallStatus="progress";
           console.log("[eventHandlers]:call is in progress", this.id, e);
           saveDebugLog({
             call_status: "call is in progress",
@@ -281,6 +329,8 @@ function App() {
           });
         },
         failed: function (e) {
+          setCallOutStatus("failed");
+          sessionRef.current.myCallStatus="failed";
           sessionRef.current = null;
           setIsCallingOut(false);
           saveDebugLog({
@@ -289,22 +339,26 @@ function App() {
           });
 
           if (e.originator === "remote") {
-            audioPlayers.End.play();
-            setTimeout(() => {
-              audioPlayers.End.pause();
-            }, 1500);
+            endAudio_play();
+            // audioPlayers.End.play();
+            // setTimeout(() => {
+            //   audioPlayers.End.pause();
+            // }, 1500);
           }
         },
         ended: function (e) {
+          setCallOutStatus("ended");
+          sessionRef.current.myCallStatus="ended";
           sessionRef.current = null;
           setIsCallingOut(false);
           console.log("[eventHandlers]:call ended with cause: ", e, this.id);
 
           if (e.originator === "remote") {
-            audioPlayers.End.play();
-            setTimeout(() => {
-              audioPlayers.End.pause();
-            }, 1500);
+            endAudio_play();
+            // audioPlayers.End.play();
+            // setTimeout(() => {
+            //   audioPlayers.End.pause();
+            // }, 1500);
           }
           saveDebugLog({
             call_status: "makeCall ended",
@@ -312,6 +366,9 @@ function App() {
           });
         },
         accepted: function (callEventData) {
+          setCallOutStatus("accepted");
+          sessionRef.current.myCallStatus="accepted";
+          sessionRef.current.myHangupName="Hangup";
           console.log("Call accepted");
           saveDebugLog({
             call_status: "makeCall accepted",
@@ -319,8 +376,11 @@ function App() {
           });
         },
         confirmed: function (e) {
+          sessionRef.current.myHangupName="Hangup";
+          setCallOutStatus("confirmed");
           console.log("[eventHandlers]:call confirmed", this.id, e);
-
+          sessionRef.current.myCallStatus="confirmed";
+          sessionRef.current.myCallStatus_time=Date.now();
           saveDebugLog({
             call_status: "makeCall confirmed",
             data: e,
@@ -355,6 +415,7 @@ function App() {
           `sip:${to}@${process.env.REACT_APP_DOMAIN_NAME}`,
           options
         );
+        sessionRef.current.myCallTo=to;
         return sessionRef.current;
       }
     },
@@ -393,6 +454,26 @@ function App() {
       handleUnregister();
     }
   }, [isLogined]);
+  useEffect(() => {
+    const workerCode = `
+      self.onmessage = function(event) {
+        const result = event.data.num * 2;
+        self.postMessage(result);
+      };
+    `;
+    const blob = new Blob([workerCode], { type: "application/javascript" });
+    const worker = new Worker(URL.createObjectURL(blob));
+
+    worker.postMessage({ num: 5 });
+
+    worker.onmessage = (event) => {
+      setResult(event.data);
+      worker.terminate();
+    };
+    return () => {
+      worker.terminate(); // Dừng Web Worker khi component unmount
+    };
+  }, []);
   /////////////
   function hangup() {
     console.log("sessionRef=", sessionRef.current);
@@ -407,12 +488,41 @@ function App() {
     sessionCallInRef.current = null;
     setIsCallingIn(false);
   }
+
+  function ringAudio_play() {
+    const audio = document.getElementById("RingAudio");
+    audio.play();
+  }
+  function ringAudio_stop() {
+    const audio = document.getElementById("RingAudio");
+    audio.pause();
+  }
+  function endAudio_play() {
+    const audio = document.getElementById("EndAudio");
+    audio.play();
+  }
+  function endAudio_stop() {
+    const audio = document.getElementById("EndAudio");
+    audio.pause();
+  }
   return (
     <>
-      <h1>JsSIP by Locvv</h1>
+      <audio id="remoteAudio" autoPlay controls className="hidden"></audio>
+      <audio id="RingAudio" src="media/Ringtone_1.mp3" loop={true}></audio>
+      <audio id="EndAudio" src="media/Tone_Congestion-US.mp3"></audio>
+      {/* <div style={{ textAlign: "center" ,display:"flex",flexDirection:"column",gap:"1rem" ,lineHeight:"2rem",fontSize:"1.5rem", padding:"1rem"}}>
+            <audio ref={audioRef} src="media/Ringtone_1.mp3" loop={true} />
+            <button onClick={ringAudio_play}>Play</button>
+            <button onClick={ringAudio_stop}>Pause</button>
+      </div> */}
+      {/* <h1>JsSIP by Locvv</h1> */}
+      {/* <div>
+      Kết quả: {result}
+    </div> */}
 
-      {isLogined ? <Home /> : <Login />}
-      <hr></hr>
+      {/* <div style={{ textAlign: "center",padding:"1rem" }}>X2fBM84haUAVcsL#</div> */}
+      {isLogined ? <Home isOnCall={isOnCall} /> : <Login />}
+      {/* <hr></hr>
       <button onClick={() => console.log(sessionCallInRef.current)}>sessionCallInRef</button>
       <button onClick={() => console.log(userRef.current)}>UseRef</button>
       <button onClick={() => console.log(user)}>User</button>
@@ -420,17 +530,22 @@ function App() {
       <button onClick={() => handleUnregister()}>Unregister</button>
       <button onClick={() => console.log({ isCallingOut })}>
         isCallingOut
-      </button>
+      </button> */}
       {/* {isCallingIn && <WindowCallIn session={sessionCallInRef.current} resetIncallSession={resetIncallSession}></WindowCallIn>}  */}
       {sessionRef.current && (
-        <WindowCallOut session={sessionRef.current}></WindowCallOut>
+        <WindowCallOut session={sessionRef.current} callOutStatus={callOutStatus}></WindowCallOut>
       )}
-      {!sessionCallInRef.current && (
-        <WindowCallIn session={sessionCallInRef.current} resetIncallSession={resetIncallSession}></WindowCallIn>
+      {sessionCallInRef.current && (
+        <WindowCallIn
+          session={sessionCallInRef.current}
+          resetIncallSession={resetIncallSession}
+          endAudio_play={endAudio_play}
+          ringAudio_stop={ringAudio_stop}
+        ></WindowCallIn>
       )}
 
-      <hr />
-      <button onClick={() => hangup()}>App_Hangup</button>
+      {/* <hr />
+      <button onClick={() => hangup()}>App_Hangup</button> */}
     </>
   );
 }

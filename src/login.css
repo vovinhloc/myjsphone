@@ -1,0 +1,54 @@
+.containerColumn{
+    display: flex;
+    flex-direction: column;
+}
+.textCenter{
+    text-align: center;
+}
+.fontLarge{
+    font-size: 1.2rem;
+    line-height: 2rem;
+}
+.containerColumn{
+    width: 100%;
+    /* border: 1px solid red; */
+    display: flex;
+
+}
+.LoginForm-Item{
+    display: flex;
+    width: 100%;
+    gap:.5rem;
+    margin-bottom: 1rem;
+}
+.LoginForm-Item label{
+    width: 7rem;
+    /* border: 1px solid blue; */
+    text-align: right;
+    
+}
+.LoginForm-Item input{
+    flex:1;
+    padding:.5rem;
+    background-color: rgb(233, 232, 232);
+}
+.LoginForm-Item input:focus{
+    background-color:  rgb(218, 216, 216);
+    outline: none;
+    border: none;
+}
+.LoginForm-Item button{
+    flex:1;
+    padding:.5rem;
+    background-color: rgba(0, 147, 255, 0.91);
+    color: white;
+    padding:0.5rem;
+    font-size: 1.5rem;
+    border-radius: .5rem;
+}
+.LoginForm{
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    padding-right: 0.5rem;;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
